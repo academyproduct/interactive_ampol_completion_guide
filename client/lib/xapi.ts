@@ -138,7 +138,7 @@ function getActor() {
   const userId = getOrCreateUserId();
   return {
     account: {
-      homePage: "https://academyproduct.github.io/dynamic_completion_guide",
+      homePage: "https://academyproduct.github.io/dynamic_completion_guide", /* this homePage is a static string and can be adjusted, example: https://academyproduct.github.io/interactive_ampol_completion_guide/*/
       name: userId,
     },
   };
