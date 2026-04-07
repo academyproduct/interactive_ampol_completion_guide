@@ -138,7 +138,7 @@ export async function sendCheckboxXapi(ctx: CheckboxXapiContext) {
   }
 
 }
-type DayKey = "M" | "T" | "W" | "Th" | "F" | "S" | "Su";
+export type DayKey = "M" | "T" | "W" | "Th" | "F" | "S" | "Su";
 
 function getActor() {
   if (_actorEmail) {

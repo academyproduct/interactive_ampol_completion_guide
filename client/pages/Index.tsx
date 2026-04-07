@@ -13,6 +13,7 @@ import {
   sendScheduleMinutesXapi,
   sendPageLoadXapi,
   setActorEmail,
+  type DayKey,
 } from "@/lib/xapi";
 
 
@@ -21,7 +22,7 @@ export const isValidEmail = (email: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-const WEEKDAYS = [
+const WEEKDAYS: { key: DayKey; label: string; name: string }[] = [
   { key: "M", label: "M", name: "Monday" },
   { key: "T", label: "T", name: "Tuesday" },
   { key: "W", label: "W", name: "Wednesday" },
@@ -324,7 +325,7 @@ const handleTaskToggle = (weekNumber: number, dayKey: string, taskId: number) =>
             First, choose the date by which you want to be finished with your course. When adding this target course completion date,
             <span className="font-bold"> check the length of your course access period. </span>
              If you're unsure when your access to your course expires, navigate to the American Politics & the U.S. Constitution page on the dashboard and look for the date to the right of the Resume button.
-            <span className="font-bold"> If you do not complete your course before your access period ends, you will incur additional tuition charges.</span>
+            <span className="font-bold"> If you do not complete your course before your access period ends, you will incur additional tuition charges.</span> Then, please enter your email address. Be sure to use the address you used when you enrolled at WGU.
           </p>
         </div>
 
