@@ -12,9 +12,14 @@ import {
   sendScheduleDaySelectionXapi,
   sendScheduleMinutesXapi,
   sendPageLoadXapi,
+  setActorEmail,
 } from "@/lib/xapi";
 
 
+
+export const isValidEmail = (email: string): boolean => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 
 const WEEKDAYS = [
   { key: "M", label: "M", name: "Monday" },
@@ -37,6 +42,8 @@ export default function Index() {
   const [checkedTaskIds, setCheckedTaskIds] = useState<Set<number>>(new Set());
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [taskPool, setTaskPool] = useState<TaskPool>({ available: [], assigned: [], completed: [] });
+  const [emailAddress, setEmailAddress] = useState<string>("");
+  const [emailTouched, setEmailTouched] = useState(false);
   const [warnings, setWarnings] = useState<{ unallocatedTasks: boolean; exceededDate: boolean }>({
     unallocatedTasks: false,
     exceededDate: false,
@@ -53,6 +60,7 @@ export default function Index() {
         weeks,
         checkedTaskIds: Array.from(checkedTaskIds),
         warnings,
+        emailAddress,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (error) {
@@ -73,6 +81,7 @@ export default function Index() {
         setWeeks(state.weeks || []);
         setCheckedTaskIds(new Set(state.checkedTaskIds || []));
         setWarnings(state.warnings || { unallocatedTasks: false, exceededDate: false });
+        setEmailAddress(state.emailAddress || "");
         return true;
       }
     } catch (error) {
@@ -228,9 +237,17 @@ const handleTaskToggle = (weekNumber: number, dayKey: string, taskId: number) =>
     if (allTasks.length > 0) {
       saveToLocalStorage();
     }
-  }, [selectedDays, minutesPerDay, completionDate, submitted, weeks, checkedTaskIds, warnings]);
+  }, [selectedDays, minutesPerDay, completionDate, submitted, weeks, checkedTaskIds, warnings, emailAddress]);
+
+  // Sync email state to xAPI module for actor identification
+  useEffect(() => {
+    setActorEmail(emailAddress.trim());
+  }, [emailAddress]);
 
   const handleSubmit = () => {
+    // Mark email as touched so nudge/error messages appear
+    setEmailTouched(true);
+
     // Basic validation: require a date and at least one selected day
     if (!completionDate) {
       alert("Please pick a completion date.");
@@ -238,6 +255,11 @@ const handleTaskToggle = (weekNumber: number, dayKey: string, taskId: number) =>
     }
     if (selectedDays.length === 0) {
       alert("Please select at least one weekday.");
+      return;
+    }
+
+    // Email validation gate: block if non-empty and malformed
+    if (emailAddress.trim() !== "" && !isValidEmail(emailAddress.trim())) {
       return;
     }
 
@@ -306,8 +328,8 @@ const handleTaskToggle = (weekNumber: number, dayKey: string, taskId: number) =>
           </p>
         </div>
 
-        <div className="flex flex-col items-center gap-4 w-full max-w-[262px]">
-          <div className="w-full flex flex-col gap-1.5">
+        <div className="flex flex-col sm:flex-row items-start justify-center gap-4 w-full max-w-[600px]">
+          <div className="w-full sm:w-auto flex flex-col gap-1.5">
             <label className="text-center text-black text-base font-bold font-lato">
               Select a desired completion date:
             </label>
@@ -323,6 +345,27 @@ const handleTaskToggle = (weekNumber: number, dayKey: string, taskId: number) =>
 
               className="w-full px-4 py-3 text-center border-[1.4px] border-black/30 rounded text-lg"
             />
+          </div>
+          <div className="w-full sm:w-auto flex flex-col gap-1.5">
+            <label htmlFor="email-input" className="text-center text-black text-base font-bold font-lato">
+              Enter your email address:
+            </label>
+            <input
+              id="email-input"
+              type="email"
+              autoComplete="email"
+              placeholder="name@example.com"
+              value={emailAddress}
+              onChange={(e) => setEmailAddress(e.target.value)}
+              onBlur={() => setEmailTouched(true)}
+              className="w-full px-4 py-3 text-center border-[1.4px] border-black/30 rounded text-lg"
+            />
+            {emailTouched && emailAddress.trim() === "" && (
+              <p className="text-sm text-amber-600 font-lato">Providing an email is recommended.</p>
+            )}
+            {emailAddress.trim() !== "" && !isValidEmail(emailAddress.trim()) && (
+              <p className="text-sm text-red-600 font-lato">Please enter a valid email address.</p>
+            )}
           </div>
         </div>
 

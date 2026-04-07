@@ -1,6 +1,12 @@
 import type { Task } from "@shared/tasks";
 import { sendXapiStatement } from "./xapiSend";
 
+let _actorEmail = "";
+
+export function setActorEmail(email: string) {
+  _actorEmail = email;
+}
+
 const VERBS = {
   selected: {
     id: "http://id.tincanapi.com/verb/selected",
@@ -135,6 +141,9 @@ export async function sendCheckboxXapi(ctx: CheckboxXapiContext) {
 type DayKey = "M" | "T" | "W" | "Th" | "F" | "S" | "Su";
 
 function getActor() {
+  if (_actorEmail) {
+    return { mbox: `mailto:${_actorEmail}` };
+  }
   const userId = getOrCreateUserId();
   return {
     account: {
